@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Account Statement</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 22px 28px 40px 28px;
+
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 7px;
+                color: #555;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8px;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* ---------- Logo ---------- */
+        .logo-box {
+            line-height: 1;
+        }
+
+        .logo-box .mark {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #4caf50;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        .logo-box .word {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .logo-box .word b {
+            display: block;
+            color: #0a7d3c;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-box .word span {
+            display: block;
+            color: #0a7d3c;
+            font-size: 9px;
+        }
+
+        /* ---------- Header ---------- */
+        .top-header {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .top-header td {
+            vertical-align: top;
+            border: none;
+        }
+
+        .stmt-date {
+            text-align: right;
+            font-size: 8px;
+            color: #333;
+        }
+
+        .company {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 8px 0 12px 0;
+            color: #000;
+        }
+
+        .period {
+            font-size: 8px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .period b {
+            margin-left: 10px;
+            color: #000;
+        }
+
+        /* ---------- Green account bar ---------- */
+        .account-bar {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0a7d3c;
+            color: #fff;
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .account-bar td {
+            padding: 7px 10px;
+            border: none;
+        }
+
+        .account-bar .right {
+            text-align: right;
+        }
+
+        /* ---------- Applicant / branch blocks ---------- */
+        .block {
+            width: 100%;
+            border: 1px solid #cfcfcf;
+            border-collapse: collapse;
+            margin-top: 6px;
+        }
+
+        .block td {
+            padding: 7px;
+            vertical-align: top;
+            border: 1px solid #cfcfcf;
+        }
+
+        .name {
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .block .line {
+            margin: 2px 0;
+        }
+
+        /* ---------- Summary grid ---------- */
+        .summary {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            margin-top: 8px;
+        }
+
+        .summary td {
+            padding: 4px 6px;
+        }
+
+        .grey {
+            background: #ececec;
+        }
+
+        .green {
+            background: #cfe6cf;
+        }
+
+        .lbl {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .val {
+            text-align: right;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* ---------- Transaction table ---------- */
+        .txn {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7px;
+            margin-top: 6px;
+        }
+
+        .txn th, .txn td {
+            border: 1px solid #b5b5b5;
+            padding: 4px;
+        }
+
+        .txn thead th {
+            background: #d6df28;
+            text-align: center;
+            color: #000;
+        }
+
+        .txn tbody td {
+            background: #fff;
+        }
+
+        .txn td.num {
+            text-align: right;
+        }
+
+        .txn tr.total td {
+            font-weight: bold;
+            background: #f7f7f7;
+        }
+
+        /* ---------- Notes ---------- */
+        .notes {
+            margin-top: 14px;
+            font-size: 8px;
+            line-height: 1.5;
+            color: #222;
+        }
+
+        .notes p {
+            margin: 5px 0;
+        }
+
+        .notes .heading {
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        /* ---------- Banner ---------- */
+        .banner {
+            margin-top: 16px;
+            width: 100%;
+            border-collapse: collapse;
+            background: #0a7d3c;
+            color: #fff;
+        }
+
+        .banner td {
+            padding: 16px 18px;
+            vertical-align: middle;
+        }
+
+        .banner .big {
+            font-size: 13px;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .banner .pill {
+            background: #d6df28;
+            color: #0a7d3c;
+            font-weight: bold;
+            padding: 4px 10px;
+            font-size: 9px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 7px;
+            margin-top: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<#-- Reusable header + account bar as macros -->
+<#macro logo>
+    <span class="logo-box">
+        <span class="mark"></span><span class="word"><b>SMFG</b><span>India Credit</span></span>
+    </span>
+</#macro>
+
+<#macro header>
+    <table class="top-header">
+        <tr>
+            <td style="width:60%;"><@logo/></td>
+            <td class="stmt-date">${data.statementDate!''}</td>
+        </tr>
+    </table>
+    <div class="company">${data.companyName!''}</div>
+    <div class="period">Account Statement for period :
+        <b>${data.periodFrom!''} - ${data.periodTo!''}</b></div>
+</#macro>
+
+<#macro accountBar>
+    <table class="account-bar">
+        <tr>
+            <td>Loan Account Number&#160;&#160;&#160;${data.loanAccountNumber!''}</td>
+            <td class="right">Customer ID&#160;&#160;${data.customerId!''}</td>
+        </tr>
+    </table>
+</#macro>
+
+<#-- ======================= PAGE 1 : SUMMARY ======================= -->
+<@header/>
+<@accountBar/>
+
+<table class="block">
+    <tr>
+        <td style="width:55%;">
+            <div class="name">${data.applicantName!''}</div>
+            <div class="line">${data.address!''}</div>
+            <br/>
+            <div class="line"><span class="label">Email ID : </span>${data.emailId!''}</div>
+            <div class="line"><span class="label">GST State Code : </span>${data.gstStateCode!''}</div>
+            <div class="line"><span class="label">GSTIN : </span>${data.gstin!''}</div>
+            <div class="line"><span class="label">Mobile : </span>${data.mobile!''}</div>
+        </td>
+        <td style="width:45%;">
+            <div class="line"><span class="label">APPLICANT&#160;&#160;&#160;&#160;:</span> ${data.applicantName!''}</div>
+            <div class="line"><span class="label">CKYC ID&#160;&#160;&#160;&#160;&#160;:</span> ${data.ckycId!''}</div>
+        </td>
+    </tr>
+</table>
+
+<table class="block">
+    <tr>
+        <td>
+            <div class="line"><span class="label">Branch Code : </span>${data.branchCode!''}</div>
+            <div class="line"><span class="label">Branch Address : </span>${data.branchAddress!''}</div>
+        </td>
+    </tr>
+</table>
+
+<#assign leftRows = [
+    {"l":"Status",                              "v":data.status!''},
+    {"l":"Product Name",                        "v":data.productName!''},
+    {"l":"Amount Finance (Rs.)",                "v":data.amountFinance!''},
+    {"l":"Disbursal Date",                      "v":data.disbursalDate!''},
+    {"l":"Tenure",                              "v":data.tenure!''},
+    {"l":"Repayment Frequency",                 "v":data.repaymentFrequency!''},
+    {"l":"Repayment Mode",                      "v":data.repaymentMode!''},
+    {"l":"Months on Book (MOB)",                "v":data.monthsOnBook!''},
+    {"l":"Balance Tenure",                      "v":data.balanceTenure!''},
+    {"l":"Interest Rate",                       "v":data.interestRate!''},
+    {"l":"Rate of Interest",                    "v":data.rateOfInterest!''},
+    {"l":"Amount Disbursed till date (Rs.)",    "v":data.amountDisbursedTillDate!''},
+    {"l":"First EMI Date",                      "v":data.firstEmiDate!''},
+    {"l":"Last EMI Date",                       "v":data.lastEmiDate!''},
+    {"l":"Disbursal Status",                    "v":data.disbursalStatus!''},
+    {"l":"Linked Loan Account No.",             "v":data.linkedLoanAccountNo!''},
+    {"l":"Asset Category",                      "v":data.assetCategory!''},
+    {"l":"Asset Model",                         "v":data.assetModel!''},
+    {"l":"Asset SR No",                         "v":data.assetSrNo!''},
+    {"l":"Asset Brand",                         "v":data.assetBrand!''},
+    {"l":"Asset Loan Scheme",                   "v":data.assetLoanScheme!''},
+    {"l":"APR%",                                "v":data.aprPercent!''},
+    {"l":"Pending No. of EMI",                  "v":data.pendingNoOfEmi!''}
+]/>
+<#assign rightRows = [
+    {"l":"Installment Paid (Rs.)",              "v":data.installmentPaid!''},
+    {"l":"Principal Paid (Rs.)",                "v":data.principalPaid!''},
+    {"l":"Interest Paid (Rs.)",                 "v":data.interestPaid!''},
+    {"l":"Principal Outstanding (Rs.)",         "v":data.principalOutstanding!''},
+    {"l":"Overdue Principal Amount (Rs.)",      "v":data.overduePrincipalAmount!''},
+    {"l":"Future Principal Amount (Rs.)",       "v":data.futurePrincipalAmount!''},
+    {"l":"Overdue Interest Amount (Rs.)",       "v":data.overdueInterestAmount!''},
+    {"l":"Other Overdues (Rs.)",                "v":data.otherOverdues!''},
+    {"l":"Additional Interest Paid (Rs.)",      "v":data.additionalInterestPaid!''},
+    {"l":"Additional Interest Due (Rs.)",       "v":data.additionalInterestDue!''},
+    {"l":"Bounce Charges Paid (Rs.)",           "v":data.bounceChargesPaid!''},
+    {"l":"Bounce Charges Due (Rs.)",            "v":data.bounceChargesDue!''},
+    {"l":"Total Outstanding (Rs.)",             "v":data.totalOutstanding!''},
+    {"l":"Installment Overdue (Rs.)",           "v":data.installmentOverdue!''},
+    {"l":"Unapplied Credits (Rs.)",             "v":data.unappliedCredits!''},
+    {"l":"Last Payment Amount (Rs.)",           "v":data.lastPaymentAmount!''},
+    {"l":"Last Payment Date",                   "v":data.lastPaymentDate!''},
+    {"l":"Manfacturer Subvention Amount (Rs.)", "v":data.manufacturerSubventionAmount!''},
+    {"l":"CP Subvention Amount (Rs.)",          "v":data.cpSubventionAmount!''},
+    {"l":"Retailer Subvention Amount (Rs.)",    "v":data.retailerSubventionAmount!''},
+    {"l":"Asset Value (Rs.)",                   "v":data.assetValue!''},
+    {"l":"Late Payment Charges Paid (Rs.)",     "v":data.latePaymentChargesPaid!''},
+    {"l":"Late Payment Charges Due (Rs.)",      "v":data.latePaymentChargesDue!''}
+]/>
+
+<table class="summary">
+    <#list 0..(leftRows?size - 1) as i>
+        <tr>
+            <td class="grey lbl" style="width:28%;">${leftRows[i].l}</td>
+            <td class="grey val" style="width:22%;">${leftRows[i].v}</td>
+            <td class="green lbl" style="width:30%;">${rightRows[i].l}</td>
+            <td class="green val" style="width:20%;">${rightRows[i].v}</td>
+        </tr>
+    </#list>
+</table>
+
+<#-- ======================= PAGE 2 : TRANSACTIONS ======================= -->
+<div class="page-break"></div>
+<@header/>
+<@accountBar/>
+
+<table class="txn">
+    <thead>
+        <tr>
+            <th rowspan="2">Date</th>
+            <th rowspan="2">Value Date</th>
+            <th rowspan="2">Particulars</th>
+            <th rowspan="2">Debit</th>
+            <th rowspan="2">Credit</th>
+            <th colspan="2">Additional Interest</th>
+            <th colspan="2">Bounce Charges</th>
+            <th colspan="2">Late Payment Charges</th>
+        </tr>
+        <tr>
+            <th>Due</th><th>Paid</th>
+            <th>Due</th><th>Paid</th>
+            <th>Due</th><th>Paid</th>
+        </tr>
+    </thead>
+    <tbody>
+        <#list data.transactions as t>
+        <tr>
+            <td>${t.date!''}</td>
+            <td>${t.valueDate!''}</td>
+            <td>${t.particulars!''}</td>
+            <td class="num">${t.debit!''}</td>
+            <td class="num">${t.credit!''}</td>
+            <td class="num">${t.addlInterestDue!''}</td>
+            <td class="num">${t.addlInterestPaid!''}</td>
+            <td class="num">${t.bounceChargesDue!''}</td>
+            <td class="num">${t.bounceChargesPaid!''}</td>
+            <td class="num">${t.latePaymentDue!''}</td>
+            <td class="num">${t.latePaymentPaid!''}</td>
+        </tr>
+        </#list>
+        <tr class="total">
+            <td colspan="3" style="text-align:center;">All Total</td>
+            <td class="num">${totalDebit!''}</td>
+            <td class="num">${totalCredit!''}</td>
+            <td class="num">0.00</td><td class="num">0.00</td>
+            <td class="num">0.00</td><td class="num">0.00</td>
+            <td class="num">0.00</td><td class="num">0.00</td>
+        </tr>
+    </tbody>
+</table>
+
+<#-- ======================= PAGE 3 : NOTES ======================= -->
+<div class="page-break"></div>
+<@header/>
+<@accountBar/>
+
+<div class="notes">
+    <p class="heading">Important Notification:</p>
+    <p>"We hereby declare that though our aggregate turnover in any preceding financial year from
+        2017-18 onwards is more than the aggregate turnover notified under sub-rule (4) of rule 48,
+        we are not required to prepare an invoice in terms of the provisions of the said sub-rule."</p>
+    <p>Note : Insurance premium is including applicable tax and break-up of insurance premium and
+        applicable tax will be available in the certificate of insurance provided by the insurance company.</p>
+    <p>Note : This is computer generated statement and does not require signature.</p>
+    <br/>
+    <p>Description Of Service: Other financial services (997119)</p>
+    <p>Service Tax Code : ${data.serviceTaxCode!''}</p>
+    <p>GSTIN : ${data.footerGstin!''}</p>
+    <p>CIN : ${data.cin!''}</p>
+    <br/>
+    <p>Corporate Office: 10th Floor, Office No. 101, 102 &amp; 103, 2 North Avenue, Maker Maxity,
+        Bandra Kurla Complex, Bandra (E), Mumbai - 400 051</p>
+    <p>Registered Office: Commerzone IT Park, Tower B, 1st Floor, No. 111, Mount Poonamallee Road,
+        Porur, Chennai - 600116, Tamil Nadu.</p>
+    <p>Contact Details: Toll-free: 18001036001 | Email: namaste@smfgindia.com</p>
+</div>
+
+<table class="banner">
+    <tr>
+        <td style="width:70%;">
+            <div class="big">Realise your dream wedding<br/>&amp; build amazing memories<br/>with our Personal loans</div>
+        </td>
+        <td style="width:30%; text-align:right;">
+            <span class="pill">SMFG India Credit</span>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
